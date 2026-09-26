@@ -59,10 +59,12 @@ class AutomationEngine:
         self,
         workflow: Workflow,
         runtime_parameters: Optional[Dict[str, Any]] = None,
+        failure_injection: Optional[Dict[str, Any]] = None,
     ) -> WorkflowExecutionResult:
         """Execute an approved workflow with per-step post-condition verification.
         
         Refuses to run if approval is missing, rejected, or if workflow was altered.
+        Optionally supports failure_injection for deliberate failure demonstration.
         """
         # 1. Gatekeeper: Assert valid, recorded user consent
         approval_record = self.approval_store.assert_authorized(workflow)
@@ -82,8 +84,14 @@ class AutomationEngine:
             resolved_params = interpolate_params(step.params, active_vars)
 
             try:
-                # Dispatch action to closed vocabulary connector
-                actual_state, step_ok, step_err = self._dispatch_action(step.type, resolved_params)
+                # Check for deliberate failure injection
+                if failure_injection and failure_injection.get("fail_at_step") == step.step:
+                    actual_state = failure_injection.get("simulated_actual_state") or {"invoice_status": "PENDING"}
+                    step_ok = True
+                    step_err = None
+                else:
+                    # Dispatch action to closed vocabulary connector
+                    actual_state, step_ok, step_err = self._dispatch_action(step.type, resolved_params)
 
                 if not step_ok:
                     raise RuntimeError(step_err or "Connector reported action failure.")

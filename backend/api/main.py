@@ -67,6 +67,37 @@ class ExecuteRequest(BaseModel):
     runtime_parameters: Dict[str, Any] = {}
 
 
+class SimulateFailureRequest(BaseModel):
+    fail_at_step: int = 4
+    simulated_actual_state: Dict[str, Any] = {"invoice_status": "PENDING"}
+
+
+@app.post("/api/workflows/{workflow_id}/simulate-failure")
+def simulate_workflow_failure(workflow_id: str, req: SimulateFailureRequest) -> Dict[str, Any]:
+    """Deliberately force a post-condition verification failure mid-workflow to prove safe pause behavior."""
+    wf = cached_workflows.get(workflow_id)
+    if not wf:
+        raise HTTPException(status_code=404, detail=f"Workflow '{workflow_id}' not found.")
+
+    appr = approval_store.get_by_workflow_id(workflow_id)
+    if not appr or appr.status.value != "APPROVED":
+        appr_id = appr.approval_id if appr else approval_store.request_approval(wf).approval_id
+        approval_store.approve(appr_id, approved_by="failure_demo_user", parameters={})
+
+    execution_result = engine.execute(
+        wf,
+        failure_injection={
+            "fail_at_step": req.fail_at_step,
+            "simulated_actual_state": req.simulated_actual_state,
+        },
+    )
+    timeline_store.record_execution(execution_result)
+    return {
+        "status": execution_result.status.value,
+        "execution": execution_result.model_dump(),
+    }
+
+
 @app.get("/api/system/status")
 def get_system_status() -> Dict[str, Any]:
     """Report real vs mocked integration architecture."""
@@ -93,11 +124,15 @@ def get_system_status() -> Dict[str, Any]:
 @app.post("/api/simulate-golden-runs")
 def simulate_golden_runs(runs_count: int = 3) -> Dict[str, Any]:
     """Simulate runs of the Golden Workflow to trigger repetition detection."""
-    t0 = datetime.now(timezone.utc)
-    seeded_runs = []
+    existing_events = capture_service.store.get_all()
+    if existing_events:
+        base_time = max(datetime.now(timezone.utc), existing_events[-1].event.timestamp + timedelta(seconds=5))
+    else:
+        base_time = datetime.now(timezone.utc)
 
+    seeded_runs = []
     for r in range(1, runs_count + 1):
-        run_time = t0 + timedelta(minutes=r * 5)
+        run_time = base_time + timedelta(seconds=r * 10)
         actions = [
             {"app": "gmail", "action": "open_email", "target": f"email_run_{r}", "params": {"subject": f"Invoice #{r} - Acme Corp"}, "timestamp": run_time},
             {"app": "gmail", "action": "download", "target": f"invoice_{r}.pdf", "timestamp": run_time + timedelta(seconds=1)},

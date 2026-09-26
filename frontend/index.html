@@ -457,15 +457,23 @@
       currentApproval = approveData.approval_record;
 
       // Execute
-      const runtimeParams = forceFailure 
-        ? { customer_id: "cust_unregistered_failure_node" }
-        : {};
-
-      const execRes = await fetch(`/api/workflows/${currentWorkflow.workflow_id}/execute`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ runtime_parameters: runtimeParams })
-      });
+      let execRes;
+      if (forceFailure) {
+        execRes = await fetch(`/api/workflows/${currentWorkflow.workflow_id}/simulate-failure`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fail_at_step: 4,
+            simulated_actual_state: { "invoice_status": "PENDING" }
+          })
+        });
+      } else {
+        execRes = await fetch(`/api/workflows/${currentWorkflow.workflow_id}/execute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ runtime_parameters: {} })
+        });
+      }
       const execData = await execRes.json();
       renderExecution(execData.execution);
     }
