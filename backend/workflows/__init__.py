@@ -1,5 +1,12 @@
-"""Workflows package defining schemas, closed vocabulary, and strict validation."""
+"""Workflows package defining schemas, closed vocabulary, validation, and approval gatekeeping."""
 
+from backend.workflows.approval import (
+    ApprovalRecord,
+    ApprovalStatus,
+    ApprovalStore,
+    UnapprovedExecutionError,
+    compute_workflow_hash,
+)
 from backend.workflows.schema import (
     ActionStep,
     CheckType,
@@ -8,7 +15,7 @@ from backend.workflows.schema import (
     VerificationRule,
     Workflow,
 )
-from backend.workflows.validator import ValidationResult, WorkflowValidator
+from backend.workflows.validator import ValidationResult, WorkflowValidationError, WorkflowValidator
 
 __all__ = [
     "ControlledActionType",
@@ -18,5 +25,11 @@ __all__ = [
     "TriggerConfig",
     "Workflow",
     "ValidationResult",
+    "WorkflowValidationError",
     "WorkflowValidator",
+    "ApprovalStatus",
+    "ApprovalRecord",
+    "ApprovalStore",
+    "UnapprovedExecutionError",
+    "compute_workflow_hash",
 ]
