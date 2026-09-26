@@ -63,3 +63,18 @@ class ActivityEvent(BaseModel):
         if not isinstance(value, dict):
             raise ValueError("metadata must be a dictionary")
         return value
+
+
+if __name__ == "__main__":
+    import json
+
+    # Create a valid sample event
+    sample_event = ActivityEvent(
+        application=Application.GMAIL,
+        action=Action.READ_EMAIL,
+        target="msg_invoice_109",
+        metadata={"subject": "Vendor Invoice", "sender": "billing@acme.corp"},
+    )
+    print("SUCCESS: ActivityEvent created and validated successfully!")
+    print(json.dumps(json.loads(sample_event.model_dump_json()), indent=2))
+

@@ -207,3 +207,30 @@ class EventStore:
 
     def __len__(self) -> int:
         return len(self._events)
+
+
+if __name__ == "__main__":
+    from backend.events.schema import Action, Application
+
+    store = EventStore()
+    print("1. Creating events...")
+    e1 = ActivityEvent(
+        application=Application.GMAIL,
+        action=Action.READ_EMAIL,
+        target="email_101",
+        metadata={"subject": "Monthly Statement"},
+    )
+    e2 = ActivityEvent(
+        application=Application.GMAIL,
+        action=Action.DOWNLOAD_ATTACHMENT,
+        target="invoice.pdf",
+    )
+    s1 = store.append(e1)
+    s2 = store.append(e2)
+
+    print(f"   Stored Event 0: Hash={s1.hash[:16]}... Prev={s1.prev_hash[:16]}...")
+    print(f"   Stored Event 1: Hash={s2.hash[:16]}... Prev={s2.prev_hash[:16]}...")
+
+    is_valid, msg = store.verify_integrity()
+    print(f"2. Verification result: valid={is_valid} ({msg})")
+
