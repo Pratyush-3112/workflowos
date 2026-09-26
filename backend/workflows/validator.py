@@ -86,9 +86,16 @@ class WorkflowValidator:
             errors.append(f"Expected dict or Workflow instance, got {type(candidate).__name__}")
             return ValidationResult(valid=False, errors=errors, warnings=warnings)
 
-        # 2. Check Action Steps count
+        # 2. Check Action Steps count and sequential numbering
         if not workflow.actions:
             errors.append("Workflow must contain at least one action step.")
+        else:
+            indices = [s.step for s in workflow.actions]
+            expected = list(range(1, len(workflow.actions) + 1))
+            if indices != expected:
+                errors.append(
+                    f"Step numbers must be strictly sequential starting at 1. Expected {expected}, got {indices}"
+                )
 
         # 3. Check parameter requirements per step
         referenced_variables: Set[str] = set()
