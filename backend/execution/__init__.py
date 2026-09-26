@@ -7,6 +7,7 @@ from backend.execution.schema import (
     WorkflowExecutionResult,
     WorkflowRunStatus,
 )
+from backend.execution.timeline import TimelineStore
 
 __all__ = [
     "StepExecutionStatus",
@@ -14,4 +15,5 @@ __all__ = [
     "VerificationResult",
     "WorkflowExecutionResult",
     "AutomationEngine",
+    "TimelineStore",
 ]

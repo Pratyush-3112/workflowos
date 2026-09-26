@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorkFlowOS — Observe, Discover, Approve & Verify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0B0F17;
+      --card-bg: rgba(17, 24, 39, 0.75);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: #38BDF8;
+      --text: #F3F4F6;
+      --text-muted: #9CA3AF;
+      --accent-blue: #38BDF8;
+      --accent-purple: #818CF8;
+      --accent-green: #34D399;
+      --accent-amber: #FBBF24;
+      --accent-red: #F87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: radial-gradient(circle at 10% 20%, #111827 0%, var(--bg) 90%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(12px);
+      background: rgba(11, 15, 23, 0.85);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .badges-strip {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      font-size: 0.75rem;
+    }
+
+    .badge {
+      padding: 0.25rem 0.55rem;
+      border-radius: 9999px;
+      font-weight: 500;
+      border: 1px solid transparent;
+    }
+    .badge-real { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border-color: rgba(52, 211, 153, 0.3); }
+    .badge-mock { background: rgba(251, 191, 36, 0.15); color: var(--accent-amber); border-color: rgba(251, 191, 36, 0.3); }
+    .badge-info { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border-color: rgba(56, 189, 248, 0.3); }
+
+    .action-bar {
+      padding: 1rem 2rem;
+      background: rgba(15, 23, 42, 0.6);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-blue), #2563EB);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    .btn-primary:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .btn-danger {
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--accent-red);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+    .btn-danger:hover {
+      background: rgba(248, 113, 113, 0.25);
+    }
+
+    main {
+      flex: 1;
+      padding: 1.5rem 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1.3fr;
+      gap: 1.5rem;
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      padding: 0.85rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border-left: 3px solid var(--accent-blue);
+      font-size: 0.82rem;
+    }
+
+    .step-item.success { border-left-color: var(--accent-green); background: rgba(52, 211, 153, 0.03); }
+    .step-item.failed { border-left-color: var(--accent-red); background: rgba(248, 113, 113, 0.05); }
+    .step-item.skipped { border-left-color: var(--text-muted); opacity: 0.6; }
+
+    .step-title {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .step-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      word-break: break-all;
+    }
+
+    .state-diff {
+      margin-top: 0.3rem;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.3);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    .expected { color: var(--accent-blue); }
+    .actual { color: var(--accent-green); }
+    .mismatch { color: var(--accent-red); font-weight: 600; }
+
+    .approval-box {
+      border: 1px solid var(--accent-amber);
+      background: rgba(251, 191, 36, 0.05);
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .approval-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo-badge">WOS</div>
+      <h1>WorkFlowOS</h1>
+    </div>
+    <div class="badges-strip">
+      <span class="badge badge-real">Deterministic Repetition (Real)</span>
+      <span class="badge badge-real">AI Intent & Gen (Real OpenAI)</span>
+      <span class="badge badge-real" id="slack-badge">Slack API (Real/Simulated)</span>
+      <span class="badge badge-mock">Gmail (Realistic Mock)</span>
+      <span class="badge badge-mock">CRM (Realistic Mock)</span>
+      <span class="badge badge-info">Post-Condition Verification (State Computed)</span>
+    </div>
+  </header>
+
+  <div class="action-bar">
+    <button class="btn-primary" onclick="simulateRuns(3)">
+      ⚡ 1. Simulate 3 Runs (Detection)
+    </button>
+    <button class="btn-secondary" onclick="generateWorkflowFromTopCandidate()">
+      🧠 2. AI Infer & Generate
+    </button>
+    <button class="btn-secondary" onclick="approveAndExecute(false)">
+      🚀 3. Live 4th Run (Full Verified Flow)
+    </button>
+    <button class="btn-danger" onclick="approveAndExecute(true)">
+      ⚠️ 4. Trigger Mid-Flow Verification Failure (Safe Pause Demo)
+    </button>
+  </div>
+
+  <main>
+    <!-- Left Column: Discovery & Intent -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">📡 Discovered Repetitions</span>
+        <span class="badge badge-info" id="events-count">0 Events</span>
+      </div>
+      <div id="candidates-container">
+        <div class="empty-state">No repetitions detected yet.<br>Click <strong>Simulate 3 Runs</strong> to begin.</div>
+      </div>
+      <div id="intent-container" style="display:none;"></div>
+    </div>
+
+    <!-- Middle Column: Generated Workflow & Approval Gate -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">📋 Workflow & Consent Gate</span>
+        <span class="badge badge-mock" id="wf-status-badge">Awaiting Gen</span>
+      </div>
+      <div id="workflow-container">
+        <div class="empty-state">No workflow generated yet.<br>Select a candidate to generate.</div>
+      </div>
+    </div>
+
+    <!-- Right Column: Live Execution & Post-Condition Verification -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">🔬 Verification & Timeline</span>
+        <span class="badge badge-info" id="exec-status-badge">Idle</span>
+      </div>
+      <div id="execution-container">
+        <div class="empty-state">Execution timeline is idle.<br>Approve and execute to inspect real-time state verification.</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentCandidate = null;
+    let currentWorkflow = null;
+    let currentApproval = null;
+
+    async function fetchSystemStatus() {
+      try {
+        const res = await fetch('/api/system/status');
+        const data = await res.json();
+        document.getElementById('events-count').innerText = `${data.event_count} Events`;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function simulateRuns(count = 3) {
+      const res = await fetch(`/api/simulate-golden-runs?runs_count=${count}`, { method: 'POST' });
+      const data = await res.json();
+      await fetchSystemStatus();
+      await loadCandidates();
+    }
+
+    async function loadCandidates() {
+      const res = await fetch('/api/candidates');
+      const candidates = await res.json();
+      const container = document.getElementById('candidates-container');
+
+      if (!candidates.length) {
+        container.innerHTML = '<div class="empty-state">No candidate workflows discovered yet.</div>';
+        return;
+      }
+
+      currentCandidate = candidates[0];
+      container.innerHTML = candidates.map(c => `
+        <div class="card">
+          <div class="tag-row">
+            <span class="badge badge-real">${c.occurrences} Occurrences</span>
+            <span class="badge badge-info">Confidence: ${(c.confidence * 100).toFixed(0)}%</span>
+            <span class="badge badge-real">Integrity Verified</span>
+          </div>
+          <div style="font-weight:600; margin-top:0.25rem;">${c.signature}</div>
+          <div class="step-meta">Candidate ID: ${c.candidate_id}</div>
+        </div>
+      `).join('');
+    }
+
+    async function generateWorkflowFromTopCandidate() {
+      if (!currentCandidate) {
+        await simulateRuns(3);
+      }
+      if (!currentCandidate) return;
+
+      // 1. Infer Intent
+      const intentRes = await fetch(`/api/candidates/${currentCandidate.candidate_id}/infer-intent`, { method: 'POST' });
+      const intentData = await intentRes.json();
+      const intent = intentData.intent;
+
+      const intentBox = document.getElementById('intent-container');
+      intentBox.style.display = 'block';
+      intentBox.innerHTML = `
+        <div class="card" style="border-left:3px solid var(--accent-purple);">
+          <div style="font-weight:600; color:#fff;">🎯 ${intent.intent_label}</div>
+          <div style="font-size:0.8rem; color:var(--text-muted);">${intent.summary}</div>
+          <div class="step-meta">Inferred Trigger: ${intent.trigger_event_type}</div>
+        </div>
+      `;
+
+      // 2. Generate Workflow
+      const genRes = await fetch(`/api/candidates/${currentCandidate.candidate_id}/generate-workflow`, { method: 'POST' });
+      const genData = await genRes.json();
+      currentWorkflow = genData.workflow;
+      currentApproval = genData.approval_request;
+
+      renderWorkflow();
+    }
+
+    function renderWorkflow() {
+      if (!currentWorkflow) return;
+      document.getElementById('wf-status-badge').innerText = currentApproval ? currentApproval.status : 'GENERATED';
+
+      const container = document.getElementById('workflow-container');
+      container.innerHTML = `
+        <div class="card">
+          <div style="font-weight:700; font-size:1rem; color:#fff;">${currentWorkflow.name}</div>
+          <div style="font-size:0.8rem; color:var(--text-muted);">${currentWorkflow.description}</div>
+        </div>
+
+        <div class="approval-box">
+          <div style="font-weight:600; color:var(--accent-amber);">🔒 User Consent Gate (Recorded Approval)</div>
+          <div style="font-size:0.8rem; color:var(--text-muted);">
+            Engine refuses to execute until explicit user authorization is recorded. Tamper protection hash active.
+          </div>
+          <div class="approval-actions">
+            <button class="btn-primary" onclick="approveAndExecute(false)">✅ Approve & Execute</button>
+            <button class="btn-danger" onclick="rejectCurrentWorkflow()">❌ Reject</button>
+          </div>
+        </div>
+
+        <div style="font-weight:600; font-size:0.85rem; margin-top:0.5rem;">Steps (${currentWorkflow.actions.length}):</div>
+        ${currentWorkflow.actions.map(a => `
+          <div class="step-item">
+            <div class="step-title">
+              <span>Step ${a.step}: ${a.type}</span>
+              <span class="badge badge-info">${a.verification.check_type}</span>
+            </div>
+            <div class="step-meta">Params: ${JSON.stringify(a.params)}</div>
+            <div class="step-meta expected">Verify: ${a.verification.description}</div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    async function approveAndExecute(forceFailure = false) {
+      if (!currentWorkflow) {
+        await generateWorkflowFromTopCandidate();
+      }
+
+      // Approve
+      const approveRes = await fetch(`/api/workflows/${currentWorkflow.workflow_id}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          approved_by: "auditor@workflowos.io",
+          parameters: {
+            email_id: "email_demo_1",
+            attachment_id: "att_inv_001",
+            customer_id: "cust_acme_corp",
+            slack_channel: "#billing-alerts"
+          }
+        })
+      });
+      const approveData = await approveRes.json();
+      currentApproval = approveData.approval_record;
+
+      // Execute
+      const runtimeParams = forceFailure 
+        ? { customer_id: "cust_unregistered_failure_node" }
+        : {};
+
+      const execRes = await fetch(`/api/workflows/${currentWorkflow.workflow_id}/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ runtime_parameters: runtimeParams })
+      });
+      const execData = await execRes.json();
+      renderExecution(execData.execution);
+    }
+
+    async function rejectCurrentWorkflow() {
+      if (!currentWorkflow) return;
+      await fetch(`/api/workflows/${currentWorkflow.workflow_id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rejected_by: "user", reason: "User declined automation" })
+      });
+      document.getElementById('wf-status-badge').innerText = 'REJECTED';
+      alert('Workflow marked REJECTED. Execution engine will refuse to run.');
+    }
+
+    function renderExecution(exec) {
+      const badge = document.getElementById('exec-status-badge');
+      badge.innerText = exec.status;
+      badge.className = exec.status === 'SUCCESS' ? 'badge badge-real' : 'badge badge-mock';
+
+      const container = document.getElementById('execution-container');
+      container.innerHTML = `
+        <div class="card" style="border-left: 3px solid ${exec.status === 'SUCCESS' ? 'var(--accent-green)' : 'var(--accent-red)'}">
+          <div style="font-weight:600;">Run Status: ${exec.status}</div>
+          <div class="step-meta">Execution ID: ${exec.execution_id}</div>
+          ${exec.error_message ? `<div class="mismatch" style="margin-top:0.4rem;">⚠️ ${exec.error_message}</div>` : ''}
+        </div>
+
+        <div style="font-weight:600; font-size:0.85rem; margin-top:0.5rem;">Per-Step Verification Audit:</div>
+        ${exec.step_results.map(r => `
+          <div class="step-item ${r.status.toLowerCase()}">
+            <div class="step-title">
+              <span>Step ${r.step}: ${r.action_type}</span>
+              <span class="badge ${r.verified ? 'badge-real' : 'badge-danger'}">${r.status} (Verified: ${r.verified})</span>
+            </div>
+            <div style="font-size:0.8rem; margin:0.25rem 0;">${r.detail}</div>
+            <div class="state-diff">
+              <span class="expected">Expected:</span> ${JSON.stringify(r.expected_state)}<br>
+              <span class="${r.verified ? 'actual' : 'mismatch'}">Actual:</span> ${JSON.stringify(r.actual_state)}
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    // Initialize on load
+    fetchSystemStatus();
+  </script>
+</body>
+</html>

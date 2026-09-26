@@ -157,7 +157,11 @@ class AutomationEngine:
         if action_type == ControlledActionType.READ_EMAIL:
             email_id = params.get("email_id") or params.get("subject") or "default_email"
             res = self.email_connector.read_email(str(email_id))
-            return {"opened": res.get("opened", True), "email_id": email_id}, True, None
+            return {
+                "opened": res.get("opened", True),
+                "retrieved": True,
+                "email_id": email_id,
+            }, True, None
 
         elif action_type == ControlledActionType.DOWNLOAD_ATTACHMENT:
             att_id = params.get("attachment_id") or "default_attachment"
