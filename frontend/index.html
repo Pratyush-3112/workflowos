@@ -3,33 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WorkFlowOS — Observe, Discover, Synthesize & Verify</title>
+  <title>WorkFlowOS — Enterprise Workflow Synthesis & Audit</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #07090E;
-      --bg-surface: rgba(14, 18, 27, 0.85);
-      --bg-card: rgba(21, 27, 40, 0.65);
-      --bg-card-hover: rgba(28, 36, 54, 0.85);
-      --border-subtle: rgba(255, 255, 255, 0.07);
-      --border-card: rgba(255, 255, 255, 0.1);
-      --border-focus: rgba(59, 130, 246, 0.5);
+      --bg: #FFFFFF;
+      --bg-subtle: #F8FAFC;
+      --bg-muted: #F1F5F9;
+      --border: #E2E8F0;
+      --border-dark: #CBD5E1;
 
-      --text-main: #F8FAFC;
-      --text-secondary: #94A3B8;
+      --text-main: #0F172A;
+      --text-secondary: #475569;
       --text-muted: #64748B;
+      --text-light: #94A3B8;
 
-      --blue: #3B82F6;
-      --blue-glow: rgba(59, 130, 246, 0.25);
-      --emerald: #10B981;
-      --emerald-glow: rgba(16, 185, 129, 0.2);
-      --amber: #F59E0B;
-      --amber-glow: rgba(245, 158, 11, 0.2);
-      --rose: #F43F5E;
-      --rose-glow: rgba(244, 63, 94, 0.2);
-      --purple: #8B5CF6;
+      --navy: #0F172A;
+      --navy-hover: #1E293B;
+      --accent: #1E293B;
+
+      --status-success: #15803D;
+      --status-success-bg: #F0FDF4;
+      --status-success-border: #BBF7D0;
+
+      --status-paused: #B45309;
+      --status-paused-bg: #FEFCE8;
+      --status-paused-border: #FEF08A;
+
+      --status-failed: #B91C1C;
+      --status-failed-bg: #FEF2F2;
+      --status-failed-border: #FECACA;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,726 +42,506 @@
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg);
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.06) 0px, transparent 40%),
-        radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
-      background-attachment: fixed;
       color: var(--text-main);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
-      letter-spacing: -0.01em;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Top Navigation Header */
+    /* Enterprise Navigation Header */
     header {
       padding: 0.85rem 2rem;
-      border-bottom: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      backdrop-filter: blur(20px);
-      background: rgba(7, 9, 14, 0.8);
+      background: #FFFFFF;
       position: sticky;
       top: 0;
       z-index: 50;
     }
 
-    .brand-group {
+    .brand-section {
       display: flex;
       align-items: center;
-      gap: 1rem;
-    }
-
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .logo-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 7px;
-      background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-      box-shadow: 0 0 16px rgba(59, 130, 246, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.8rem;
-      color: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      gap: 1.5rem;
     }
 
     .brand-title {
       font-size: 1.05rem;
       font-weight: 700;
-      letter-spacing: -0.03em;
-      color: #FFFFFF;
-    }
-
-    .brand-version {
-      font-size: 0.68rem;
-      font-weight: 600;
-      padding: 0.15rem 0.45rem;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--text-muted);
-      border: 1px solid var(--border-subtle);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* Subdued Status Indicator Strip */
-    .system-status-strip {
+      letter-spacing: -0.02em;
+      color: var(--navy);
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      background: rgba(255, 255, 255, 0.02);
-      padding: 0.3rem 0.75rem;
-      border-radius: 20px;
-      border: 1px solid var(--border-subtle);
+      gap: 0.5rem;
     }
 
-    .status-item {
+    .brand-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.15rem 0.45rem;
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+    }
+
+    /* Status Indicators Strip */
+    .telemetry-strip {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .telemetry-item {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      font-size: 0.7rem;
-      color: var(--text-secondary);
+      gap: 0.4rem;
+      font-size: 0.75rem;
       font-weight: 500;
+      color: var(--text-secondary);
     }
 
-    .status-dot {
+    .dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
+      background: var(--border-dark);
     }
-    .dot-real { background: var(--emerald); box-shadow: 0 0 6px var(--emerald); }
-    .dot-mock { background: var(--amber); opacity: 0.8; }
-    .dot-verify { background: var(--blue); box-shadow: 0 0 6px var(--blue); }
+    .dot-real { background: var(--status-success); }
+    .dot-mock { background: var(--text-muted); }
 
-    .status-divider {
-      width: 1px;
-      height: 10px;
-      background: var(--border-subtle);
-    }
-
-    /* Global Action / Demo Stepper Bar */
-    .control-bar {
+    /* Operational Action Bar */
+    .action-bar {
       padding: 0.75rem 2rem;
-      background: rgba(11, 15, 23, 0.6);
-      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
     }
 
-    .stepper-label {
-      font-size: 0.72rem;
+    .action-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.05em;
       color: var(--text-muted);
     }
 
-    .stepper-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      flex-wrap: wrap;
-    }
-
+    /* Strict Square / Outlined Buttons */
     button {
       font-family: inherit;
       cursor: pointer;
-      border: 1px solid transparent;
-      padding: 0.5rem 0.95rem;
-      border-radius: 8px;
-      font-weight: 600;
       font-size: 0.78rem;
-      transition: all 0.18s ease-in-out;
+      font-weight: 600;
+      padding: 0.5rem 0.9rem;
+      border-radius: 3px;
+      border: 1px solid var(--border-dark);
+      background: #FFFFFF;
+      color: var(--text-main);
       display: inline-flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.4rem;
+      transition: background 0.1s ease, border-color 0.1s ease;
       user-select: none;
     }
-
-    .btn-step {
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-main);
-      border-color: var(--border-card);
-    }
-    .btn-step:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-1px);
+    button:hover {
+      background: var(--bg-muted);
+      border-color: var(--text-muted);
     }
 
-    .btn-cta {
-      background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+    .btn-primary {
+      background: var(--navy);
       color: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+      border-color: var(--navy);
     }
-    .btn-cta:hover {
-      background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.5);
-      transform: translateY(-1px);
+    .btn-primary:hover {
+      background: var(--navy-hover);
+      border-color: var(--navy-hover);
     }
 
-    .btn-deliberate-failure {
-      background: rgba(244, 63, 94, 0.08);
-      color: #FDA4AF;
-      border-color: rgba(244, 63, 94, 0.25);
+    .btn-destructive {
+      background: #FFFFFF;
+      color: var(--status-failed);
+      border-color: #FECACA;
     }
-    .btn-deliberate-failure:hover {
-      background: rgba(244, 63, 94, 0.16);
-      border-color: rgba(244, 63, 94, 0.45);
-      color: #FFF;
-      transform: translateY(-1px);
+    .btn-destructive:hover {
+      background: var(--status-failed-bg);
+      border-color: var(--status-failed);
     }
 
-    /* 3-Column Main Layout */
+    /* Structured Main 3-Column Grid */
     main {
       flex: 1;
-      padding: 1.25rem 2rem;
+      padding: 1.5rem 2rem;
       display: grid;
-      grid-template-columns: minmax(320px, 1fr) minmax(380px, 1.25fr) minmax(400px, 1.35fr);
-      gap: 1.25rem;
-      max-height: calc(100vh - 120px);
+      grid-template-columns: 1fr 1.15fr 1.35fr;
+      gap: 1.5rem;
+      align-items: start;
     }
 
-    .panel {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
+    /* Column Container */
+    .column-panel {
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: #FFFFFF;
+      min-height: calc(100vh - 160px);
     }
 
-    .panel-header {
-      padding: 0.9rem 1.15rem;
-      border-bottom: 1px solid var(--border-subtle);
+    .column-header {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(18, 23, 34, 0.4);
     }
 
-    .panel-title-group {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .panel-number {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem;
-      font-weight: 600;
-      color: var(--blue);
-      background: rgba(59, 130, 246, 0.1);
-      padding: 0.15rem 0.4rem;
-      border-radius: 4px;
-    }
-
-    .panel-title {
-      font-size: 0.85rem;
+    .column-title {
+      font-size: 0.8rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--text-main);
+      color: var(--navy);
     }
 
-    .panel-body {
-      padding: 1rem;
-      overflow-y: auto;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-    }
-
-    /* Custom Slim Scrollbars */
-    .panel-body::-webkit-scrollbar { width: 5px; }
-    .panel-body::-webkit-scrollbar-track { background: transparent; }
-    .panel-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
-    .panel-body::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
-
-    /* Pill Badges */
-    .pill {
-      font-size: 0.68rem;
-      font-weight: 600;
-      padding: 0.2rem 0.55rem;
-      border-radius: 9999px;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      letter-spacing: 0.02em;
-    }
-    .pill-green {
-      background: rgba(16, 185, 129, 0.12);
-      color: #34D399;
-      border: 1px solid rgba(16, 185, 129, 0.25);
-    }
-    .pill-blue {
-      background: rgba(59, 130, 246, 0.12);
-      color: #60A5FA;
-      border: 1px solid rgba(59, 130, 246, 0.25);
-    }
-    .pill-amber {
-      background: rgba(245, 158, 11, 0.12);
-      color: #FBBF24;
-      border: 1px solid rgba(245, 158, 11, 0.25);
-    }
-    .pill-red {
-      background: rgba(244, 63, 94, 0.12);
-      color: #FDA4AF;
-      border: 1px solid rgba(244, 63, 94, 0.25);
-    }
-    .pill-gray {
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--text-secondary);
-      border: 1px solid var(--border-subtle);
-    }
-
-    /* Standard Card Structure */
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-card);
-      border-radius: 10px;
-      padding: 0.9rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.65rem;
-      transition: border-color 0.15s ease, background 0.15s ease;
-    }
-    .card:hover {
-      border-color: rgba(255, 255, 255, 0.18);
-      background: var(--bg-card-hover);
-    }
-
-    .card-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-
-    /* Candidate Visual Flow Diagram */
-    .flow-chain {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.35rem;
-      margin: 0.35rem 0;
-    }
-
-    .flow-node {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      border: 1px solid var(--border-subtle);
+    .column-meta {
       font-size: 0.72rem;
-    }
-
-    .app-tag {
-      font-size: 0.62rem;
-      font-weight: 700;
-      padding: 0.1rem 0.3rem;
-      border-radius: 3px;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .app-gmail { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; }
-    .app-crm { background: rgba(59, 130, 246, 0.2); color: #93C5FD; }
-    .app-slack { background: rgba(168, 85, 247, 0.2); color: #D8B4FE; }
-    .app-generic { background: rgba(255, 255, 255, 0.1); color: var(--text-secondary); }
-
-    .node-action {
-      color: var(--text-main);
       font-weight: 500;
-      text-transform: capitalize;
-    }
-
-    .flow-sep {
       color: var(--text-muted);
-      font-size: 0.75rem;
-    }
-
-    .mono-meta {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem;
-      color: var(--text-muted);
     }
 
-    /* Human Consent Gate Box */
-    .consent-gate-card {
-      border: 1px solid rgba(245, 158, 11, 0.35);
-      background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%);
-      border-radius: 10px;
+    .column-content {
       padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      box-shadow: 0 8px 20px -8px var(--amber-glow);
+      gap: 1rem;
     }
 
-    .consent-header {
+    /* Status Badges */
+    .status-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      border: 1px solid transparent;
+    }
+    .tag-success { background: var(--status-success-bg); color: var(--status-success); border-color: var(--status-success-border); }
+    .tag-paused { background: var(--status-paused-bg); color: var(--status-paused); border-color: var(--status-paused-border); }
+    .tag-failed { background: var(--status-failed-bg); color: var(--status-failed); border-color: var(--status-failed-border); }
+    .tag-neutral { background: var(--bg-muted); color: var(--text-secondary); border-color: var(--border); }
+
+    /* Candidates List View */
+    .candidate-record {
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      background: #FFFFFF;
+    }
+    .candidate-record.primary {
+      border-left: 3px solid var(--navy);
+    }
+
+    .record-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+
+    .flow-sequence {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      margin: 0.25rem 0;
+    }
+
+    .flow-item {
+      font-size: 0.78rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .flow-app {
+      font-weight: 700;
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      width: 50px;
+    }
+
+    .flow-arrow {
+      color: var(--text-light);
+      font-size: 0.7rem;
+    }
+
+    .meta-subtext {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Intent Card */
+    .intent-card {
+      padding: 0.85rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .intent-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .intent-desc {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* Human Consent Gate */
+    .consent-gate {
+      border: 1px solid #FEF08A;
+      background: #FEFCE8;
+      border-radius: 3px;
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
     }
 
     .consent-title {
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      color: #FBBF24;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
+      color: #92400E;
     }
 
-    .consent-desc {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
+    .consent-text {
+      font-size: 0.74rem;
+      color: #78350F;
       line-height: 1.4;
     }
 
-    .consent-actions {
+    .consent-buttons {
       display: flex;
       gap: 0.5rem;
     }
 
-    .btn-approve {
-      background: var(--emerald);
-      color: #064E3B;
-      font-weight: 700;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 2px 10px var(--emerald-glow);
-      flex: 1;
-      justify-content: center;
-    }
-    .btn-approve:hover {
-      background: #34D399;
-      color: #022C22;
-      transform: translateY(-1px);
-    }
-
-    .btn-reject {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-muted);
-      border-color: var(--border-subtle);
-    }
-    .btn-reject:hover {
-      background: rgba(244, 63, 94, 0.15);
-      color: #FDA4AF;
-      border-color: rgba(244, 63, 94, 0.3);
-    }
-
-    /* Workflow Step Rows */
-    .step-list {
+    /* Steps List */
+    .step-row {
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.75rem;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.35rem;
+      background: #FFFFFF;
     }
 
-    .wf-step-item {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border-subtle);
-      border-left: 3px solid var(--blue);
-      border-radius: 8px;
-      padding: 0.75rem 0.85rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
-      transition: background 0.15s ease;
-    }
-    .wf-step-item:hover {
-      background: rgba(255, 255, 255, 0.04);
-    }
-
-    .wf-step-header {
+    .step-title-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .step-idx-badge {
-      font-size: 0.72rem;
+    .step-name {
+      font-size: 0.78rem;
       font-weight: 700;
-      color: #FFFFFF;
+      color: var(--navy);
     }
 
-    .params-wrap {
+    .params-list {
       display: flex;
       flex-wrap: wrap;
       gap: 0.35rem;
+      margin: 0.15rem 0;
     }
 
-    .param-pill {
-      font-size: 0.68rem;
-      background: rgba(0, 0, 0, 0.35);
-      padding: 0.15rem 0.45rem;
-      border-radius: 4px;
-      border: 1px solid var(--border-subtle);
-      color: var(--text-secondary);
-    }
-    .param-pill code {
+    .param-chip {
+      font-size: 0.7rem;
       font-family: 'JetBrains Mono', monospace;
-      color: #93C5FD;
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      padding: 0.1rem 0.35rem;
+      border-radius: 2px;
+      border: 1px solid var(--border);
     }
 
-    .verify-desc {
+    .rule-chip {
       font-size: 0.72rem;
-      color: #60A5FA;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: rgba(59, 130, 246, 0.06);
-      padding: 0.25rem 0.5rem;
-      border-radius: 5px;
+      color: var(--text-muted);
+      border-top: 1px dashed var(--border);
+      padding-top: 0.35rem;
     }
 
-    /* Execution & Verification Audit Panel */
-    .execution-hero {
-      border-radius: 10px;
-      padding: 0.95rem;
+    /* Audit & Verification Panel */
+    .audit-summary {
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.85rem;
       display: flex;
       flex-direction: column;
       gap: 0.4rem;
     }
-    .hero-success {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.03) 100%);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      box-shadow: 0 4px 16px var(--emerald-glow);
+    .summary-success {
+      background: var(--status-success-bg);
+      border-color: var(--status-success-border);
     }
-    .hero-failure {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(244, 63, 94, 0.08) 100%);
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      box-shadow: 0 4px 16px var(--amber-glow);
+    .summary-paused {
+      background: var(--status-paused-bg);
+      border-color: var(--status-paused-border);
     }
 
-    .hero-status-title {
-      font-size: 0.92rem;
+    .summary-heading {
+      font-size: 0.82rem;
       font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-    }
-    .hero-success .hero-status-title { color: #34D399; }
-    .hero-failure .hero-status-title { color: #FBBF24; }
-
-    .hero-detail {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      line-height: 1.4;
-    }
-
-    /* Step Audit Items */
-    .audit-step-card {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 0.8rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .audit-step-card.step-success { border-left: 3px solid var(--emerald); background: rgba(16, 185, 129, 0.02); }
-    .audit-step-card.step-failed { border-left: 3px solid var(--rose); background: rgba(244, 63, 94, 0.04); }
-    .audit-step-card.step-skipped { border-left: 3px solid var(--text-muted); opacity: 0.55; }
-
-    .audit-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
+    .summary-success .summary-heading { color: var(--status-success); }
+    .summary-paused .summary-heading { color: var(--status-paused); }
 
-    .audit-name {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
+    .summary-desc {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
     }
 
-    /* Structured State Diff Table */
+    /* Diff Comparison Table */
     .diff-table {
-      background: rgba(0, 0, 0, 0.45);
-      border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      overflow: hidden;
-      font-size: 0.7rem;
-      margin-top: 0.2rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+      margin-top: 0.35rem;
     }
 
-    .diff-row {
-      display: grid;
-      grid-template-columns: 110px 1fr 1fr;
-      padding: 0.35rem 0.6rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .diff-row:last-child { border-bottom: none; }
-
-    .diff-row.row-mismatch {
-      background: rgba(244, 63, 94, 0.12);
-    }
-
-    .diff-key {
-      font-family: 'JetBrains Mono', monospace;
+    .diff-table th {
+      text-align: left;
+      padding: 0.3rem 0.5rem;
+      background: var(--bg-muted);
       color: var(--text-muted);
-      font-weight: 500;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
     }
 
-    .diff-cell {
+    .diff-table td {
+      padding: 0.35rem 0.5rem;
+      border-bottom: 1px solid var(--border);
       font-family: 'JetBrains Mono', monospace;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    }
+    .diff-table tr:last-child td { border-bottom: none; }
+
+    .diff-table tr.mismatch-row {
+      background: var(--status-failed-bg);
     }
 
-    .diff-expected { color: #93C5FD; }
-    .diff-actual-match { color: #34D399; }
-    .diff-actual-mismatch { color: #FDA4AF; font-weight: 700; }
+    .val-exp { color: var(--text-secondary); }
+    .val-match { color: var(--status-success); font-weight: 600; }
+    .val-mismatch { color: var(--status-failed); font-weight: 700; }
 
     .empty-state {
+      padding: 3rem 1rem;
       text-align: center;
-      padding: 3rem 1.5rem;
       color: var(--text-muted);
-      font-size: 0.8rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
+      font-size: 0.78rem;
     }
-    .empty-state strong { color: var(--text-secondary); }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation Header -->
+  <!-- Enterprise Navigation Header -->
   <header>
-    <div class="brand-group">
-      <div class="brand-logo">
-        <div class="logo-icon">W</div>
-        <span class="brand-title">WorkFlowOS</span>
-      </div>
-      <span class="brand-version">Hackathon Edition</span>
+    <div class="brand-section">
+      <span class="brand-title">WorkFlowOS</span>
+      <span class="brand-badge">Verification Engine</span>
     </div>
 
-    <!-- Subdued Status Strip -->
-    <div class="system-status-strip">
-      <span class="status-item"><span class="status-dot dot-real"></span> Real Repetition Engine</span>
-      <span class="status-divider"></span>
-      <span class="status-item"><span class="status-dot dot-real"></span> Real OpenAI Intent</span>
-      <span class="status-divider"></span>
-      <span class="status-item" id="slack-badge"><span class="status-dot dot-real"></span> Real Slack Web API</span>
-      <span class="status-divider"></span>
-      <span class="status-item"><span class="status-dot dot-mock"></span> Mock Gmail</span>
-      <span class="status-divider"></span>
-      <span class="status-item"><span class="status-dot dot-mock"></span> Mock CRM</span>
-      <span class="status-divider"></span>
-      <span class="status-item"><span class="status-dot dot-verify"></span> State Verification</span>
+    <!-- Telemetry Strip -->
+    <div class="telemetry-strip">
+      <span class="telemetry-item"><span class="dot dot-real"></span> Deterministic Detection: Active</span>
+      <span class="telemetry-item"><span class="dot dot-real"></span> Model Intent: Real</span>
+      <span class="telemetry-item" id="slack-badge"><span class="dot dot-real"></span> Slack API: Connected</span>
+      <span class="telemetry-item"><span class="dot dot-mock"></span> Gmail Fixture: Mock</span>
+      <span class="telemetry-item"><span class="dot dot-mock"></span> CRM Fixture: Mock</span>
+      <span class="telemetry-item"><span class="dot dot-real"></span> Verification: Enforced</span>
     </div>
   </header>
 
-  <!-- Interactive Control & Stepper Bar -->
-  <div class="control-bar">
-    <div class="stepper-label">Demonstration Controls</div>
-    <div class="stepper-actions">
-      <button class="btn-step" id="btn-simulate" onclick="simulateRuns(3)">
-        <span>⚡ 1. Ingest & Detect (3 Runs)</span>
-      </button>
-      <button class="btn-step" id="btn-infer" onclick="generateWorkflowFromTopCandidate()">
-        <span>🧠 2. Synthesize Workflow</span>
-      </button>
-      <button class="btn-cta" id="btn-approve-primary" onclick="approveAndExecute(false)">
-        <span>🚀 3. Approve & Execute Live</span>
-      </button>
-      <button class="btn-deliberate-failure" id="btn-failure-demo" onclick="approveAndExecute(true)">
-        <span>⚠️ 4. Safe Pause Demo (CRM Lock Mismatch)</span>
-      </button>
+  <!-- Action Bar -->
+  <div class="action-bar">
+    <span class="section-label">Execution Pipeline</span>
+    <div class="action-group">
+      <button onclick="simulateRuns(3)">1. Ingest Events (3 Runs)</button>
+      <button onclick="generateWorkflowFromTopCandidate()">2. Synthesize Workflow</button>
+      <button class="btn-primary" onclick="approveAndExecute(false)">3. Authorize & Execute</button>
+      <button class="btn-destructive" onclick="approveAndExecute(true)">4. Simulate Assertion Mismatch</button>
     </div>
   </div>
 
-  <!-- 3-Column Dashboard Main Grid -->
+  <!-- 3-Column Layout -->
   <main>
-    <!-- Left Column: Discovered Repetitions & Inferred Intent -->
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title-group">
-          <span class="panel-number">01</span>
-          <span class="panel-title">Discovered Patterns</span>
-        </div>
-        <span class="pill pill-blue" id="events-count">0 Events Logged</span>
+    <!-- Left Column: Discovered Patterns -->
+    <div class="column-panel">
+      <div class="column-header">
+        <span class="column-title">Discovered Patterns</span>
+        <span class="column-meta" id="events-count">0 Events</span>
       </div>
-
-      <div class="panel-body">
+      <div class="column-content">
         <div id="candidates-container">
-          <div class="empty-state">
-            <span>No repetition detected yet.</span>
-            <span>Click <strong>1. Ingest & Detect</strong> to observe user activity.</span>
-          </div>
+          <div class="empty-state">No repetitions recorded. Execute Step 1 to ingest event stream.</div>
         </div>
         <div id="intent-container" style="display:none;"></div>
       </div>
     </div>
 
-    <!-- Middle Column: Synthesized Workflow & Human Consent Gate -->
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title-group">
-          <span class="panel-number">02</span>
-          <span class="panel-title">Synthesized Workflow</span>
-        </div>
-        <span class="pill pill-gray" id="wf-status-badge">Awaiting Gen</span>
+    <!-- Middle Column: Synthesized Specification -->
+    <div class="column-panel">
+      <div class="column-header">
+        <span class="column-title">Synthesized Workflow</span>
+        <span class="status-tag tag-neutral" id="wf-status-badge">Uninitialized</span>
       </div>
-
-      <div class="panel-body" id="workflow-container">
-        <div class="empty-state">
-          <span>No workflow generated yet.</span>
-          <span>Click <strong>2. Synthesize Workflow</strong> to prompt the LLM.</span>
-        </div>
+      <div class="column-content" id="workflow-container">
+        <div class="empty-state">No workflow generated. Execute Step 2 to synthesize specification.</div>
       </div>
     </div>
 
-    <!-- Right Column: Live Execution & Post-Condition Verification -->
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title-group">
-          <span class="panel-number">03</span>
-          <span class="panel-title">Verified Execution</span>
-        </div>
-        <span class="pill pill-gray" id="exec-status-badge">Engine Idle</span>
+    <!-- Right Column: Verification & Audit -->
+    <div class="column-panel">
+      <div class="column-header">
+        <span class="column-title">State Verification Audit</span>
+        <span class="status-tag tag-neutral" id="exec-status-badge">Idle</span>
       </div>
-
-      <div class="panel-body" id="execution-container">
-        <div class="empty-state">
-          <span>Execution engine is idle.</span>
-          <span>Click <strong>Approve & Execute</strong> to view real-time state verification.</span>
-        </div>
+      <div class="column-content" id="execution-container">
+        <div class="empty-state">Engine idle. Authorize and execute to view real-time state assertions.</div>
       </div>
     </div>
   </main>
@@ -770,7 +555,7 @@
       try {
         const res = await fetch('/api/system/status');
         const data = await res.json();
-        document.getElementById('events-count').innerText = `${data.event_count} Events Logged`;
+        document.getElementById('events-count').innerText = `${data.event_count} Events Recorded`;
       } catch (e) {
         console.error(e);
       }
@@ -783,24 +568,19 @@
       await loadCandidates();
     }
 
-    function formatSignatureFlow(sig) {
+    function formatSignatureLines(sig) {
       if (!sig) return '';
       const items = sig.split(' -> ');
       return items.map((item, idx) => {
         const parts = item.split(':');
         const app = parts[0] || '';
         const act = (parts[1] || '').toLowerCase().replace(/_/g, ' ');
-        let appClass = 'app-generic';
-        if (app === 'GMAIL') appClass = 'app-gmail';
-        if (app === 'CRM') appClass = 'app-crm';
-        if (app === 'SLACK') appClass = 'app-slack';
-
         return `
-          <div class="flow-node">
-            <span class="app-tag ${appClass}">${app}</span>
-            <span class="node-action">${act}</span>
+          <div class="flow-item">
+            <span class="flow-app">${app}</span>
+            <span class="flow-arrow">&gt;</span>
+            <span>${act}</span>
           </div>
-          ${idx < items.length - 1 ? '<span class="flow-sep">→</span>' : ''}
         `;
       }).join('');
     }
@@ -811,21 +591,21 @@
       const container = document.getElementById('candidates-container');
 
       if (!candidates.length) {
-        container.innerHTML = '<div class="empty-state">No candidate workflows discovered yet.</div>';
+        container.innerHTML = '<div class="empty-state">No candidate sequences detected.</div>';
         return;
       }
 
       currentCandidate = candidates[0];
       container.innerHTML = candidates.map((c, i) => `
-        <div class="card" style="${i === 0 ? 'border-color: rgba(59, 130, 246, 0.4);' : ''}">
-          <div class="card-top">
-            <span class="pill pill-green">${c.occurrences} Occurrences Detected</span>
-            <span class="pill pill-blue">${(c.confidence * 100).toFixed(0)}% Confidence</span>
+        <div class="candidate-record ${i === 0 ? 'primary' : ''}">
+          <div class="record-header">
+            <span class="status-tag tag-neutral">${c.occurrences} Occurrences</span>
+            <span class="status-tag tag-success">${(c.confidence * 100).toFixed(0)}% Confidence</span>
           </div>
-          <div class="flow-chain">${formatSignatureFlow(c.signature)}</div>
-          <div class="card-top" style="margin-top:0.2rem;">
-            <span class="mono-meta">ID: ${c.candidate_id}</span>
-            <span class="pill pill-green" style="font-size:0.62rem;">✓ Cryptographically Audited</span>
+          <div class="flow-sequence">${formatSignatureLines(c.signature)}</div>
+          <div class="record-header">
+            <span class="meta-subtext">ID: ${c.candidate_id}</span>
+            <span class="status-tag tag-neutral">SHA-256 Validated</span>
           </div>
         </div>
       `).join('');
@@ -845,13 +625,13 @@
       const intentBox = document.getElementById('intent-container');
       intentBox.style.display = 'block';
       intentBox.innerHTML = `
-        <div class="card" style="border-left: 3px solid var(--purple); background: rgba(139, 92, 246, 0.05);">
-          <div class="card-top">
-            <span style="font-weight:700; font-size:0.85rem; color:#DDD6FE;">🎯 Intent: ${intent.intent_label}</span>
-            <span class="pill pill-blue">Confidence: ${(intent.confidence_score * 100).toFixed(0)}%</span>
+        <div class="intent-card">
+          <div class="record-header">
+            <span class="intent-title">${intent.intent_label}</span>
+            <span class="status-tag tag-neutral">${(intent.confidence_score * 100).toFixed(0)}% Score</span>
           </div>
-          <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.4;">${intent.summary}</div>
-          <div class="mono-meta">Trigger Event: ${intent.trigger_event_type}</div>
+          <div class="intent-desc">${intent.summary}</div>
+          <div class="meta-subtext">Trigger: ${intent.trigger_event_type}</div>
         </div>
       `;
 
@@ -864,10 +644,10 @@
       renderWorkflow();
     }
 
-    function formatParamsPills(params) {
-      if (!params || Object.keys(params).length === 0) return '<span class="param-pill">None</span>';
+    function formatParamsList(params) {
+      if (!params || Object.keys(params).length === 0) return '<span class="param-chip">None</span>';
       return Object.entries(params).map(([k, v]) => `
-        <span class="param-pill">${k}: <code>${typeof v === 'object' ? JSON.stringify(v) : v}</code></span>
+        <span class="param-chip">${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}</span>
       `).join('');
     }
 
@@ -876,48 +656,45 @@
       const statusBadge = document.getElementById('wf-status-badge');
       const isApproved = currentApproval && currentApproval.status === 'APPROVED';
       statusBadge.innerText = currentApproval ? currentApproval.status : 'GENERATED';
-      statusBadge.className = isApproved ? 'pill pill-green' : 'pill pill-amber';
+      statusBadge.className = isApproved ? 'status-tag tag-success' : 'status-tag tag-paused';
 
       const container = document.getElementById('workflow-container');
       container.innerHTML = `
-        <div class="card">
-          <div class="card-top">
-            <span style="font-weight:700; font-size:0.92rem; color:#FFFFFF;">${currentWorkflow.name}</span>
-            <span class="pill pill-blue">${currentWorkflow.actions.length} Steps</span>
+        <div class="candidate-record">
+          <div class="record-header">
+            <span style="font-weight:700; font-size:0.85rem; color:var(--navy);">${currentWorkflow.name}</span>
+            <span class="status-tag tag-neutral">${currentWorkflow.actions.length} Steps</span>
           </div>
           <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.4;">${currentWorkflow.description}</div>
         </div>
 
-        <div class="consent-gate-card">
-          <div class="consent-header">
-            <span class="consent-title">🔒 User Consent Gate (Recorded Approval)</span>
-            <span class="pill pill-amber">Tamper Proof</span>
+        <div class="consent-gate">
+          <div class="record-header">
+            <span class="consent-title">Human Authorization Gate</span>
+            <span class="status-tag tag-neutral">Tamper Protected</span>
           </div>
-          <div class="consent-desc">
-            Execution engine rejects untracked workflows. SHA-256 fingerprint ensures the sequence cannot be altered post-approval.
+          <div class="consent-text">
+            Explicit authorization required. Cryptographic fingerprint guarantees specification immutability prior to execution.
           </div>
-          <div class="consent-actions">
-            <button class="btn-approve" onclick="approveAndExecute(false)">✅ Approve & Execute Live</button>
-            <button class="btn-reject" onclick="rejectCurrentWorkflow()">✕ Reject</button>
+          <div class="consent-buttons">
+            <button class="btn-primary" style="flex:1; justify-content:center;" onclick="approveAndExecute(false)">Authorize & Execute</button>
+            <button onclick="rejectCurrentWorkflow()">Reject</button>
           </div>
         </div>
 
-        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-top:0.4rem;">
-          Sequence Actions (${currentWorkflow.actions.length}):
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-top:0.25rem;">
+          Sequence Actions
         </div>
 
-        <div class="step-list">
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
           ${currentWorkflow.actions.map(a => `
-            <div class="wf-step-item">
-              <div class="wf-step-header">
-                <span class="step-idx-badge">Step ${a.step}: ${a.type}</span>
-                <span class="pill pill-gray">${a.verification.check_type}</span>
+            <div class="step-row">
+              <div class="step-title-row">
+                <span class="step-name">Step ${a.step}: ${a.type}</span>
+                <span class="status-tag tag-neutral">${a.verification.check_type}</span>
               </div>
-              <div class="params-wrap">${formatParamsPills(a.params)}</div>
-              <div class="verify-desc">
-                <span>🛡️</span>
-                <span>${a.verification.description}</span>
-              </div>
+              <div class="params-list">${formatParamsList(a.params)}</div>
+              <div class="rule-chip">Verification: ${a.verification.description}</div>
             </div>
           `).join('')}
         </div>
@@ -977,83 +754,93 @@
       });
       const badge = document.getElementById('wf-status-badge');
       badge.innerText = 'REJECTED';
-      badge.className = 'pill pill-red';
-      alert('Workflow marked REJECTED. Execution engine will refuse to run.');
+      badge.className = 'status-tag tag-failed';
+      alert('Workflow specification marked REJECTED. Execution halted.');
     }
 
-    function renderDiffTable(expected, actual, status) {
+    function renderDiffComparison(expected, actual, status) {
       if (status === 'SKIPPED') {
-        return `<div style="font-size:0.7rem; color:var(--text-muted); font-style:italic;">Step skipped to prevent invalid downstream mutations.</div>`;
+        return `<div style="font-size:0.72rem; color:var(--text-muted); font-style:italic;">Step omitted to prevent downstream data corruption.</div>`;
       }
 
       if (!expected || Object.keys(expected).length === 0) {
-        return `<div style="font-size:0.7rem; color:var(--text-muted);">No assertion criteria specified.</div>`;
+        return `<div style="font-size:0.72rem; color:var(--text-muted);">No assertion criteria specified.</div>`;
       }
 
       const rows = Object.entries(expected).map(([k, expVal]) => {
         const actVal = actual ? actual[k] : undefined;
         const isMatch = JSON.stringify(expVal) === JSON.stringify(actVal);
         return `
-          <div class="diff-row ${isMatch ? '' : 'row-mismatch'}">
-            <div class="diff-key">${k}</div>
-            <div class="diff-cell diff-expected">Exp: ${JSON.stringify(expVal)}</div>
-            <div class="diff-cell ${isMatch ? 'diff-actual-match' : 'diff-actual-mismatch'}">
-              Act: ${actVal !== undefined ? JSON.stringify(actVal) : 'undefined'} ${isMatch ? '✓' : '✕'}
-            </div>
-          </div>
+          <tr class="${isMatch ? '' : 'mismatch-row'}">
+            <td>${k}</td>
+            <td class="val-exp">${JSON.stringify(expVal)}</td>
+            <td class="${isMatch ? 'val-match' : 'val-mismatch'}">
+              ${actVal !== undefined ? JSON.stringify(actVal) : 'undefined'} ${isMatch ? '✓' : '✕'}
+            </td>
+          </tr>
         `;
       }).join('');
 
-      return `<div class="diff-table">${rows}</div>`;
+      return `
+        <table class="diff-table">
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Expected</th>
+              <th>Actual</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      `;
     }
 
     function renderExecution(exec) {
       const badge = document.getElementById('exec-status-badge');
       badge.innerText = exec.status;
-      badge.className = exec.status === 'SUCCESS' ? 'pill pill-green' : 'pill pill-amber';
+      badge.className = exec.status === 'SUCCESS' ? 'status-tag tag-success' : 'status-tag tag-paused';
 
       const isSuccess = exec.status === 'SUCCESS';
       const container = document.getElementById('execution-container');
 
       container.innerHTML = `
-        <div class="execution-hero ${isSuccess ? 'hero-success' : 'hero-failure'}">
-          <div class="hero-status-title">
-            <span>${isSuccess ? '✓ RUN COMPLETED & VERIFIED' : '⏸ EXECUTION PAUSED (SAFE HALT)'}</span>
+        <div class="audit-summary ${isSuccess ? 'summary-success' : 'summary-paused'}">
+          <div class="summary-heading">
+            <span>${isSuccess ? 'Execution Validated' : 'Execution Suspended (Safe Pause)'}</span>
+            <span class="meta-subtext">ID: ${exec.execution_id}</span>
           </div>
-          <div class="hero-detail">
+          <div class="summary-desc">
             ${isSuccess 
-              ? 'All 5 steps successfully verified post-condition state against real system fixtures.' 
-              : 'Post-condition state mismatch at Step 4. Automation engine halted immediately to protect data integrity; subsequent steps were skipped.'}
+              ? 'All 5 steps verified against post-condition state in target systems.' 
+              : 'Post-condition state assertion failed at Step 4. Engine halted execution immediately; remaining actions skipped.'}
           </div>
-          <div class="mono-meta" style="margin-top:0.2rem;">Run ID: ${exec.execution_id}</div>
-          ${exec.error_message ? `<div style="font-size:0.75rem; color:#FDA4AF; font-weight:600; margin-top:0.2rem;">⚠️ ${exec.error_message}</div>` : ''}
+          ${exec.error_message ? `<div style="font-size:0.74rem; font-weight:600; color:var(--status-failed);">${exec.error_message}</div>` : ''}
         </div>
 
-        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-top:0.4rem;">
-          Per-Step Post-Condition Audit:
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-top:0.25rem;">
+          State Verification Ledger
         </div>
 
-        <div class="step-list">
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
           ${exec.step_results.map(r => `
-            <div class="audit-step-card step-${r.status.toLowerCase()}">
-              <div class="audit-header">
-                <span class="audit-name">
-                  <span>${r.verified ? '✓' : (r.status === 'SKIPPED' ? '⊘' : '✕')}</span>
-                  <span>Step ${r.step}: ${r.action_type}</span>
-                </span>
-                <span class="pill ${r.verified ? 'pill-green' : (r.status === 'SKIPPED' ? 'pill-gray' : 'pill-red')}">
+            <div class="step-row" style="${r.status === 'FAILED' ? 'border-left: 3px solid var(--status-failed);' : (r.status === 'SUCCESS' ? 'border-left: 3px solid var(--status-success);' : '')}">
+              <div class="step-title-row">
+                <span class="step-name">Step ${r.step}: ${r.action_type}</span>
+                <span class="status-tag ${r.verified ? 'tag-success' : (r.status === 'SKIPPED' ? 'tag-neutral' : 'tag-failed')}">
                   ${r.status} ${r.verified ? '(Verified)' : ''}
                 </span>
               </div>
-              <div style="font-size:0.75rem; color:var(--text-secondary);">${r.detail}</div>
-              ${renderDiffTable(r.expected_state, r.actual_state, r.status)}
+              <div style="font-size:0.74rem; color:var(--text-secondary);">${r.detail}</div>
+              ${renderDiffComparison(r.expected_state, r.actual_state, r.status)}
             </div>
           `).join('')}
         </div>
       `;
     }
 
-    // Initialize on load
+    // Initialize
     fetchSystemStatus();
   </script>
 </body>
