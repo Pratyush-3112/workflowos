@@ -4,3 +4,10 @@ __pycache__/
 .pytest_cache/
 *.jsonl
 .DS_Store
+
+# Secrets & OAuth Tokens (Never Commit)
+credentials.json
+token.json
+*.token.json
+.env
+.env.*
