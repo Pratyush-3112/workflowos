@@ -77,32 +77,48 @@ class SimulateFailureRequest(BaseModel):
 def simulate_workflow_failure(workflow_id: str, req: SimulateFailureRequest) -> Dict[str, Any]:
     """Deliberately force a post-condition verification failure mid-workflow to prove safe pause behavior.
 
-    Steps before the injection point run normally (including against real connectors when
-    GMAIL_MODE/CRM_MODE=real). The injected step receives a fabricated actual_state that
-    intentionally mismatches the expected_state, triggering PAUSED + downstream SKIPPED.
+    This endpoint always uses mock connectors for Steps 1–3, regardless of GMAIL_MODE/CRM_MODE.
 
-    Bug fix: reuse the existing approval's approved_parameters so that template variables
-    ({{email_id}}, {{customer_id}}, etc.) are correctly interpolated for non-injected steps.
-    Previously the endpoint auto-approved with parameters={}, causing real connectors to receive
-    literal '{{email_id}}' strings and fail at Step 1 before the intended Step 4 injection point.
+    Rationale: the demo proves the SAFETY MECHANISM — that the engine detects a real-vs-expected
+    state mismatch and halts safely. The real connectors are already exercised by the normal
+    Execute path. Running real Gmail/Sheets during a simulation demo would require a real invoice
+    email in the inbox and a real Sheet row, and would fail unpredictably in any environment.
+
+    The injected step (default Step 4) receives a fabricated actual_state that intentionally
+    mismatches expected_state, triggering PAUSED + all downstream steps SKIPPED.
     """
     wf = cached_workflows.get(workflow_id)
     if not wf:
         raise HTTPException(status_code=404, detail=f"Workflow '{workflow_id}' not found.")
 
+    # Always approve with known-good demo parameters so template interpolation succeeds
+    # against the mock connectors for Steps 1–3.
     appr = approval_store.get_by_workflow_id(workflow_id)
-    if not appr or appr.status.value != "APPROVED":
-        # Carry over any already-approved parameters so template interpolation works for
-        # real connectors on steps before the injection point.
-        existing_params = appr.approved_parameters if appr else {}
-        appr_id = appr.approval_id if appr else approval_store.request_approval(wf).approval_id
-        approval_store.approve(
-            appr_id,
-            approved_by="failure_demo_user",
-            parameters=existing_params,
-        )
+    demo_params = {
+        "email_id": "email_demo_1",
+        "attachment_id": "att_inv_001",
+        "customer_id": "cust_acme_corp",
+        "slack_channel": "#billing-alerts",
+    }
+    if not appr:
+        appr_id = approval_store.request_approval(wf).approval_id
+        approval_store.approve(appr_id, approved_by="failure_demo_user", parameters=demo_params)
+    elif appr.status.value != "APPROVED":
+        approval_store.approve(appr.approval_id, approved_by="failure_demo_user", parameters=demo_params)
+    # If already APPROVED, engine will use whatever parameters were approved — that's fine.
 
-    execution_result = engine.execute(
+    # Use a dedicated mock engine so the demo never makes live Gmail/Sheets API calls.
+    # Real connector behaviour is proven by the normal Execute run; this demo only needs
+    # to show the verification halt mechanism.
+    from backend.execution.connectors.crm_mock import MockCRMConnector
+    from backend.execution.connectors.email_mock import MockEmailConnector
+    demo_engine = AutomationEngine(
+        approval_store=approval_store,
+        email_connector=MockEmailConnector(),
+        crm_connector=MockCRMConnector(),
+    )
+
+    execution_result = demo_engine.execute(
         wf,
         failure_injection={
             "fail_at_step": req.fail_at_step,
@@ -114,6 +130,7 @@ def simulate_workflow_failure(workflow_id: str, req: SimulateFailureRequest) -> 
         "status": execution_result.status.value,
         "execution": execution_result.model_dump(),
     }
+
 
 
 
