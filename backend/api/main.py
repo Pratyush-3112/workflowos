@@ -75,15 +75,32 @@ class SimulateFailureRequest(BaseModel):
 
 @app.post("/api/workflows/{workflow_id}/simulate-failure")
 def simulate_workflow_failure(workflow_id: str, req: SimulateFailureRequest) -> Dict[str, Any]:
-    """Deliberately force a post-condition verification failure mid-workflow to prove safe pause behavior."""
+    """Deliberately force a post-condition verification failure mid-workflow to prove safe pause behavior.
+
+    Steps before the injection point run normally (including against real connectors when
+    GMAIL_MODE/CRM_MODE=real). The injected step receives a fabricated actual_state that
+    intentionally mismatches the expected_state, triggering PAUSED + downstream SKIPPED.
+
+    Bug fix: reuse the existing approval's approved_parameters so that template variables
+    ({{email_id}}, {{customer_id}}, etc.) are correctly interpolated for non-injected steps.
+    Previously the endpoint auto-approved with parameters={}, causing real connectors to receive
+    literal '{{email_id}}' strings and fail at Step 1 before the intended Step 4 injection point.
+    """
     wf = cached_workflows.get(workflow_id)
     if not wf:
         raise HTTPException(status_code=404, detail=f"Workflow '{workflow_id}' not found.")
 
     appr = approval_store.get_by_workflow_id(workflow_id)
     if not appr or appr.status.value != "APPROVED":
+        # Carry over any already-approved parameters so template interpolation works for
+        # real connectors on steps before the injection point.
+        existing_params = appr.approved_parameters if appr else {}
         appr_id = appr.approval_id if appr else approval_store.request_approval(wf).approval_id
-        approval_store.approve(appr_id, approved_by="failure_demo_user", parameters={})
+        approval_store.approve(
+            appr_id,
+            approved_by="failure_demo_user",
+            parameters=existing_params,
+        )
 
     execution_result = engine.execute(
         wf,
@@ -97,6 +114,7 @@ def simulate_workflow_failure(workflow_id: str, req: SimulateFailureRequest) -> 
         "status": execution_result.status.value,
         "execution": execution_result.model_dump(),
     }
+
 
 
 @app.get("/api/system/status")
