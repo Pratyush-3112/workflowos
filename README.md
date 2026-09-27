@@ -1,141 +1,223 @@
-# WorkFlowOS ⚡
+# WorkFlowOS
 
-> **Self-Synthesizing Workflow Automation with Cryptographic Auditability & Post-Condition State Verification**  
-> *Built for CMRIT Hackathon*
+**Self-synthesizing workflow automation with cryptographic auditability and per-step post-condition state verification.**
 
-[![CI Test Suite](https://img.shields.io/badge/pytest-59%20passed-34D399?style=flat-square&logo=pytest)](https://github.com/Pratyush-3112/workflowos)
+[![Tests](https://img.shields.io/badge/pytest-66%20passed-34D399?style=flat-square&logo=pytest)](https://github.com/Pratyush-3112/workflowos)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-38BDF8?style=flat-square&logo=python)](https://python.org)
 
 ---
 
-## 💡 The Problem
+## Overview
 
-Knowledge workers repeat multi-app tasks every day (**Email → Browser → CRM → Slack**), manually copy-pasting data across systems. Existing automation tools (Zapier, Make, UiPath) require the user to already know, configure, and maintain complex integration graphs.
+WorkFlowOS passively observes multi-app user activity, detects repeating sequences using deterministic n-gram analysis, infers business intent via an LLM, generates a structured executable workflow from a closed action vocabulary, gates execution behind explicit user consent with cryptographic tamper protection, and then executes with per-step post-condition state verification. If any step's actual system state diverges from what was expected, execution halts and surfaces the exact mismatch — it never fabricates success.
 
-**WorkFlowOS flips this paradigm:**
-It passively observes regular digital work, detects repeating multi-app sequences, infers human business intent using an LLM, generates a structured executable workflow, requires explicit human consent, and executes with per-step post-condition state verification.
+The core design principle is that users should not have to program automations. The system observes, asks for permission, and verifies its own actions in reality.
 
-```
-Observe ➔ Understand ➔ Detect Repetition ➔ Generate Workflow ➔ User Approval ➔ Automate ➔ Verify
-```
+**Limitations to be aware of upfront:** there is no persistent database (all state is in-memory and resets on server restart), no authentication on the dashboard, and the Slack integration requires a real bot token to deliver messages (it falls back to simulated delivery otherwise).
 
 ---
 
-## 🛡️ Core Differentiator: Verification Is Not Optional Testing
+## Architecture
 
-Every module in WorkFlowOS proves its operations:
-1. **Schema-Valid Ingestion**: Raw inputs are normalized into immutable, frozen `ActivityEvent` models with closed vocabulary checks.
-2. **Cryptographic Sequence Integrity**: Append-only `EventStore` maintains a SHA-256 hash chain (`prev_hash` + canonical serialized payload). History cannot be forged.
-3. **No Hallucinated History**: Discovered repetition candidates cryptographically prove that every step actually occurred contiguously in real stored logs.
-4. **Constrained AI Boundary**: The LLM *never* executes code or invents action types. It produces JSON strictly restricted to our closed vocabulary (`READ_EMAIL`, `DOWNLOAD_ATTACHMENT`, `SEARCH_CUSTOMER`, `UPDATE_CUSTOMER`, `SEND_SLACK_MESSAGE`).
-5. **Mandatory User Consent Gate**: Workflows are hashed (`workflow_hash`). The engine strictly refuses to run without recorded user consent and detects any post-approval tampering.
-6. **Per-Step Post-Condition State Verification**: The automation engine queries real external system state after every step. If a CRM field update fails, execution safely enters a `PAUSED` state and surfaces computed state diffs—never fabricating success.
-
----
-
-## 🏛️ System Architecture
-
-```mermaid
-graph TD
-    Raw[Raw User Actions] -->|Normalize & Validate| AC[Activity Capture]
-    AC -->|Append + SHA-256 Chain| ES[(Append-Only Event Store)]
-    ES -->|Deterministic n-Gram Analysis| RD[Repetition Detector]
-    RD -->|Verified Candidates| AI_U[AI Intent Inferer]
-    AI_U -->|Structured Intent| AI_G[AI Workflow Generator]
-    AI_G -->|Closed Vocabulary JSON| WV{Workflow Validator}
-    WV -->|Rejected| Fallback[Deterministic Safe Fallback]
-    WV -->|Approved Shape| AG[User Approval Gate]
-    AG -->|Explicit Consent Recorded| AE[Automation Engine]
-    AE -->|Execute & Re-query State| Connectors[Gmail / CRM / Slack]
-    Connectors -->|Verify Post-Conditions| TS[(Timeline Store)]
-    TS --> UI[Observability Dashboard]
+```
+Raw Actions
+    │
+    ▼
+Activity Capture          normalize & validate into immutable ActivityEvent models
+    │
+    ▼
+Event Store               append-only; SHA-256 hash chain prevents history forgery
+    │
+    ▼
+Repetition Detector       deterministic n-gram sliding window; temporal gating (max 300s gap)
+    │
+    ▼
+AI Intent Inferer         OpenAI gpt-4o-mini with JSON Mode; deterministic fallback if no key
+    │
+    ▼
+Workflow Generator        generates closed-vocabulary JSON; WorkflowValidator rejects any
+    │                     hallucinated action types before the workflow reaches the engine
+    ▼
+User Approval Gate        SHA-256 workflow fingerprint; engine refuses to run if workflow
+    │                     was altered after approval was recorded
+    ▼
+Automation Engine         sequential step dispatch → real connector → re-query state →
+    │                     compare actual vs expected → PAUSED on any mismatch
+    ▼
+Timeline Store            immutable execution record with per-step verification results
 ```
 
 ---
 
-## 🔄 The Golden Workflow & Real vs. Mocked Matrix
+## Component Status
 
-**Workflow**: `Gmail` (Read invoice email) ➔ `Gmail` (Download attachment) ➔ `CRM` (Find customer) ➔ `CRM` (Update status to PROCESSED) ➔ `Slack` (Notify team channel).
-
-| Component | Status | Implementation Details |
+| Component | Status | Details |
 |---|---|---|
-| **Deterministic Repetition Detection** | **REAL** | n-gram sliding window with temporal gating (`max_step_gap=300s`) |
-| **Event History Audit** | **REAL** | SHA-256 hash-chain verification proving zero hallucinated history |
-| **AI Intent Understanding** | **REAL** | OpenAI API (`gpt-4o-mini`) with JSON Mode + single-retry self-repair |
-| **Workflow Generation** | **REAL** | Structured workflow generation enforced against closed vocabulary |
-| **User Approval & Tamper Gate** | **REAL** | SHA-256 workflow fingerprinting; rejects altered workflows |
-| **Slack Integration** | **REAL** | Real Slack Web API (`chat.postMessage`) when token configured; simulated fallback for local tests |
-| **Gmail Connector** | **MOCKED** | Stateful mock inbox (realistic fixture avoiding OAuth setup risk) |
-| **CRM Connector** | **MOCKED** | Stateful mock customer DB (realistic fixture avoiding OAuth setup risk) |
-| **Post-Condition State Verification** | **REAL** | Queries real connector state; compares `expected_state` vs `actual_state` |
+| Repetition Detection | **Real** | Deterministic n-gram analysis with SHA-256-verified event history |
+| Event History Integrity | **Real** | Append-only SHA-256 hash chain; forged history is detected |
+| AI Intent Understanding | **Real** | OpenAI API (`gpt-4o-mini`) with JSON Mode and single-retry self-repair; falls back to deterministic inference if `OPENAI_API_KEY` is not set |
+| Workflow Generation | **Real** | Closed vocabulary enforced by `WorkflowValidator`; LLM cannot invent action types |
+| User Approval & Tamper Gate | **Real** | SHA-256 workflow fingerprint; altered workflows are rejected at execution time |
+| Post-Condition Verification | **Real** | Engine re-queries connector state after every step; surfaces exact diffs on mismatch |
+| Gmail Connector | **Switchable** | Defaults to `MockEmailConnector` (stateful in-memory fixture). Set `GMAIL_MODE=real` with valid `credentials.json` + `token.json` to use `RealGmailConnector` via the Gmail API. See [Enabling Real Connectors](#enabling-real-connectors). |
+| CRM Connector | **Switchable** | Defaults to `MockCRMConnector` (stateful in-memory fixture). Set `CRM_MODE=real` + `GOOGLE_SHEET_ID` to use `RealSheetsCRMConnector` against a real Google Sheet. See [Enabling Real Connectors](#enabling-real-connectors). |
+| Slack Integration | **Switchable** | Set `SLACK_BOT_TOKEN` for real `chat.postMessage` delivery; simulates delivery otherwise |
 
 ---
 
-## 🚀 Quickstart
+## Setup
 
-### 1. Setup Environment
+### Prerequisites
+
+- Python 3.10+
+- No external services required for mock mode (default)
+
+### Install
+
 ```bash
 git clone https://github.com/Pratyush-3112/workflowos.git
 cd workflowos
-
-# Environment is already configured with .venv, or initialize:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Run Full Test Suite (59 Automated Tests)
+### Run tests
+
 ```bash
 .venv/bin/pytest -v
 ```
-*Zero external network calls required. All unit, integration, and E2E tests run in under 0.5 seconds.*
+
+All 66 tests pass with zero external network calls in under 1 second.
 
 ---
 
-## 🎮 How to Demo (2 Options)
+## Running Locally
 
-### Option A: Interactive Web Dashboard (Recommended for Judges)
-Start the server:
+### Mock mode (default — no credentials required)
+
 ```bash
 ./run.sh
-# or: .venv/bin/uvicorn backend.api.main:app --host 127.0.0.1 --port 8000
+# or equivalently:
+.venv/bin/uvicorn backend.api.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-Open **[http://127.0.0.1:8000](http://127.0.0.1:8000)** in your browser:
-1. Click **`⚡ 1. Simulate 3 Runs (Detection)`**: Simulates user activity; the detector instantly identifies the 5-step pattern (80% confidence, verified).
-2. Click **`🧠 2. AI Infer & Generate`**: LLM infers the business intent (*"Sync Customer Invoices to CRM & Slack"*) and generates a parameter-templated workflow.
-3. Click **`✅ Approve & Execute`**: Records user consent and executes the live 4th run. All 5 steps turn green with verified computed state.
-4. Click **`⚠️ 4. Trigger Mid-Flow Verification Failure`**: Injects a CRM write failure. Demonstrates how the system pauses safely at Step 4, surfaces the exact state mismatch, and skips Step 5 to prevent false notifications.
 
----
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000). The header strip shows which connectors are active. In mock mode, Gmail and CRM are served by stateful in-memory fixtures — no OAuth, no network calls.
 
-### Option B: Standalone Terminal Demo Runner
-Run the complete, colorized 6-phase demo in the CLI:
+### Real connector mode
+
 ```bash
-PYTHONPATH=. .venv/bin/python scripts/demo_cli.py
+GMAIL_MODE=real \
+CRM_MODE=real \
+GOOGLE_SHEET_ID=<your-sheet-id> \
+./run.sh
+```
+
+The dashboard header badges update immediately to reflect the live connector mode. See [Enabling Real Connectors](#enabling-real-connectors) for credential setup.
+
+---
+
+## Demo Walkthrough
+
+The dashboard presents the full pipeline as four sequential steps.
+
+**1. Ingest Events**
+Click "Simulate 3 Prior Runs". Seeds 15 activity events (5 actions × 3 runs) into the append-only event store and runs the repetition detector. The detected candidate — `GMAIL:READ_EMAIL → GMAIL:DOWNLOAD_ATTACHMENT → CRM:SEARCH_CUSTOMER → CRM:UPDATE_CUSTOMER → SLACK:SEND_SLACK_MESSAGE` — appears with occurrence count and confidence score.
+
+**2. Synthesize Workflow**
+Click "AI Infer & Generate". Runs intent inference (LLM or deterministic fallback if no API key), then generates a parameter-templated workflow from the closed vocabulary. Result is a validated `Workflow` object with a SHA-256 fingerprint and a pending approval request.
+
+**3. Authorize & Execute**
+Click "Authorize & Execute". Records explicit user consent with the workflow hash and dispatches execution. All 5 steps run sequentially; each step's actual post-execution state is verified against the declared expected state. All steps show `SUCCESS / Verified: true`.
+
+**4. Simulate Assertion Mismatch**
+Click "Simulate Assertion Mismatch". Re-runs the workflow but injects a fabricated `actual_state` of `{"invoice_status": "PENDING"}` at Step 4, simulating a CRM write that left the field in the wrong state. Expected result:
+
+- Steps 1–3: `SUCCESS`
+- Step 4: `FAILED` — `Expected 'invoice_status' = 'PROCESSED', actual = 'PENDING'`
+- Step 5: `SKIPPED` — downstream step suppressed to prevent a false Slack notification
+
+> **Note:** Steps 1–3 of the failure simulation always run against mock connectors, even when `GMAIL_MODE=real`. This is intentional — the demo proves that the verification halt mechanism works, not that real connectors are functional (that is already demonstrated by step 3). Using mock connectors makes the demo deterministic and environment-independent. See [Design Decisions](#design-decisions).
+
+---
+
+## Enabling Real Connectors
+
+### Prerequisites
+
+1. A **Google Cloud project** with the Gmail API and Google Sheets API enabled.
+2. An **OAuth 2.0 Desktop client** credential downloaded as `credentials.json` placed at the repo root.
+3. A **Google Sheet** with a tab named exactly `Customers` containing at minimum these column headers (case-insensitive, any order): `customer_id`, `invoice_status`. Add a data row: `cust_acme_corp | OPEN`.
+
+> `credentials.json` and `token.json` are in `.gitignore` and will never be committed.
+
+### First-time OAuth authorization
+
+Run once to generate `token.json` (opens a browser window for Google login):
+
+```bash
+.venv/bin/python scripts/verify_real_gmail.py
+```
+
+### Start with real connectors
+
+```bash
+GMAIL_MODE=real \
+CRM_MODE=real \
+GOOGLE_SHEET_ID=<your-sheet-id> \
+./run.sh
+```
+
+The factory (`backend/execution/factory.py`) resolves the connector at startup. If credentials are missing or the API call fails, it automatically falls back to mock.
+
+### Verify connectors independently
+
+```bash
+# Gmail
+PYTHONPATH=. .venv/bin/python scripts/verify_real_gmail.py
+
+# Sheets CRM
+GOOGLE_SHEET_ID=<your-sheet-id> PYTHONPATH=. .venv/bin/python scripts/verify_real_sheets.py
 ```
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 workflowos/
 ├── backend/
 │   ├── events/               # ActivityEvent schema & SHA-256 append-only EventStore
-│   ├── capture/              # Raw action normalization & persistent CaptureService
-│   ├── discovery/            # WorkflowCandidate & deterministic RepetitionDetector
-│   ├── ai/                   # Thin LLMClient, IntentInferer & WorkflowGenerator
-│   ├── workflows/            # Workflow schemas, WorkflowValidator & ApprovalStore
-│   ├── execution/            # AutomationEngine, TimelineStore & Connectors
-│   │   └── connectors/       # Slack (Real/Mock), CRM (Mock), Email (Mock)
-│   └── api/                  # FastAPI backend service
-├── frontend/                 # Rich single-page glassmorphic dashboard UI
-├── scripts/                  # demo_cli.py interactive terminal runner
+│   ├── capture/              # Raw action normalization & CaptureService
+│   ├── discovery/            # WorkflowCandidate schema & RepetitionDetector
+│   ├── ai/                   # LLMClient, IntentInferer, WorkflowGenerator
+│   ├── workflows/            # Workflow schema, WorkflowValidator, ApprovalStore
+│   ├── execution/
+│   │   ├── engine.py         # AutomationEngine — sequential dispatch & verification
+│   │   ├── factory.py        # Connector resolver (reads GMAIL_MODE / CRM_MODE)
+│   │   ├── schema.py         # WorkflowExecutionResult, VerificationResult
+│   │   ├── timeline.py       # TimelineStore — immutable execution history
+│   │   └── connectors/
+│   │       ├── email_mock.py     # MockEmailConnector — stateful in-memory inbox
+│   │       ├── gmail_real.py     # RealGmailConnector — Gmail API
+│   │       ├── crm_mock.py       # MockCRMConnector — stateful in-memory customer DB
+│   │       ├── crm_sheets.py     # RealSheetsCRMConnector — Google Sheets API
+│   │       └── slack.py          # SlackConnector — real or simulated delivery
+│   ├── integrations/
+│   │   └── google_auth.py    # Centralized OAuth2 credential management with token caching
+│   └── api/
+│       └── main.py           # FastAPI application — all endpoints
+├── frontend/
+│   └── index.html            # Single-page dashboard (vanilla JS, no framework)
+├── scripts/
+│   ├── demo_cli.py           # Terminal demo runner
+│   ├── verify_real_gmail.py  # Manual Gmail connector verification
+│   └── verify_real_sheets.py # Manual Sheets CRM connector verification
 ├── tests/
-│   ├── unit/                 # Pure unit tests (schema, detector, validator, engine)
-│   ├── integration/          # API & persistence tests
-│   └── e2e/                  # Full 7-stage golden workflow end-to-end tests
+│   ├── unit/                 # Schema, detector, engine, connectors, failure paths
+│   ├── integration/          # API endpoint tests
+│   └── e2e/                  # Full 5-step golden workflow end-to-end tests
 ├── requirements.txt
 ├── pytest.ini
 └── run.sh
@@ -143,11 +225,16 @@ workflowos/
 
 ---
 
-## 🏆 Hackathon Pitch Cheatsheet
+## Design Decisions
 
-- **Core Insight**: Users shouldn't program robots; robots should observe users and ask for permission to take over repetitive work.
-- **Why It Wins**:
-  - Unlike prompt-wrapper demos, WorkFlowOS has **hard architectural guardrails**.
-  - The LLM cannot hallucinate actions—it is bound by a closed vocabulary and a strict validator.
-  - Cryptographic tamper protection prevents workflows from being secretly modified between approval and execution.
-  - Post-condition state verification proves state changed in reality before claiming success.
+**Why is the failure-simulation demo always mocked, even in `GMAIL_MODE=real`?**
+The `POST /simulate-failure` endpoint proves that the verification mechanism correctly detects a state mismatch and halts safely. It is not re-testing real connectors — that is already done by the normal Execute path. Using mock connectors makes the demo deterministic: it does not require a specific invoice email to exist in a real inbox, it will not mutate real external state, and it will not fail due to network conditions. This is documented as an explicit architectural choice in the endpoint, not a workaround.
+
+**Why a closed action vocabulary?**
+Allowing an LLM to generate arbitrary code or API calls eliminates the human's ability to audit what will actually happen before approving. A closed vocabulary (`READ_EMAIL`, `DOWNLOAD_ATTACHMENT`, `SEARCH_CUSTOMER`, `UPDATE_CUSTOMER`, `SEND_SLACK_MESSAGE`) means every action the system can take is known at design time and validated by `WorkflowValidator` before the user sees the workflow.
+
+**Why SHA-256 workflow fingerprinting?**
+The approval gate records a hash of the workflow at consent time. If anything in the workflow is modified between approval and execution — even a single parameter value — the hash mismatch is detected and execution is blocked. The user's consent is bound to the exact workflow they reviewed.
+
+**Why no persistent database?**
+All state is held in memory and resets on server restart. This was a deliberate scope decision to keep the system self-contained. Replacing the in-memory stores with a real database does not require changes to the engine or connectors — only the store implementations.
