@@ -280,7 +280,13 @@ def get_workflow(workflow_id: str) -> Dict[str, Any]:
 
 @app.post("/api/workflows/{workflow_id}/approve")
 def approve_workflow(workflow_id: str, req: ApproveRequest) -> Dict[str, Any]:
-    """Record explicit user approval for a workflow."""
+    """Record explicit user approval for a workflow.
+
+    Idempotent: if the workflow is already APPROVED, returns the existing record.
+    The frontend calls /approve on every button click (both 'Authorize & Execute'
+    and 'Simulate Assertion Mismatch' go through the same approveAndExecute() path),
+    so re-approving an already-APPROVED workflow must not 500.
+    """
     wf = cached_workflows.get(workflow_id)
     if not wf:
         raise HTTPException(status_code=404, detail=f"Workflow '{workflow_id}' not found.")
@@ -289,6 +295,10 @@ def approve_workflow(workflow_id: str, req: ApproveRequest) -> Dict[str, Any]:
     if not appr:
         appr = approval_store.request_approval(wf)
 
+    # Idempotent: if already approved, return existing record without re-approving
+    if appr.status.value == "APPROVED":
+        return {"status": "APPROVED", "approval_record": appr.model_dump()}
+
     updated = approval_store.approve(
         approval_id=appr.approval_id,
         approved_by=req.approved_by,
@@ -296,6 +306,7 @@ def approve_workflow(workflow_id: str, req: ApproveRequest) -> Dict[str, Any]:
         notes=req.notes,
     )
     return {"status": "APPROVED", "approval_record": updated.model_dump()}
+
 
 
 @app.post("/api/workflows/{workflow_id}/reject")
