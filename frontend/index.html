@@ -490,8 +490,8 @@
       <span class="telemetry-item"><span class="dot dot-real"></span> Deterministic Detection: Active</span>
       <span class="telemetry-item"><span class="dot dot-real"></span> Model Intent: Real</span>
       <span class="telemetry-item" id="slack-badge"><span class="dot dot-real"></span> Slack API: Connected</span>
-      <span class="telemetry-item"><span class="dot dot-mock"></span> Gmail Fixture: Mock</span>
-      <span class="telemetry-item"><span class="dot dot-mock"></span> CRM Fixture: Mock</span>
+      <span class="telemetry-item" id="gmail-badge"><span class="dot dot-mock"></span> Gmail: Mock</span>
+      <span class="telemetry-item" id="crm-badge"><span class="dot dot-mock"></span> CRM: Mock</span>
       <span class="telemetry-item"><span class="dot dot-real"></span> Verification: Enforced</span>
     </div>
   </header>
@@ -556,6 +556,19 @@
         const res = await fetch('/api/system/status');
         const data = await res.json();
         document.getElementById('events-count').innerText = `${data.event_count} Events Recorded`;
+
+        // Update connector mode badges dynamically
+        const modes = data.connector_modes || {};
+        const gmailBadge = document.getElementById('gmail-badge');
+        const crmBadge = document.getElementById('crm-badge');
+        if (gmailBadge) {
+          const isReal = modes.gmail_mode === 'real';
+          gmailBadge.innerHTML = `<span class="dot ${isReal ? 'dot-real' : 'dot-mock'}"></span> Gmail: ${isReal ? 'Real API' : 'Mock'}`;
+        }
+        if (crmBadge) {
+          const isReal = modes.crm_mode === 'real';
+          crmBadge.innerHTML = `<span class="dot ${isReal ? 'dot-real' : 'dot-mock'}"></span> CRM: ${isReal ? 'Real Sheets' : 'Mock'}`;
+        }
       } catch (e) {
         console.error(e);
       }

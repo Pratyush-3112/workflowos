@@ -4,9 +4,8 @@ from datetime import datetime, timezone
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from backend.execution.connectors.crm_mock import MockCRMConnector
-from backend.execution.connectors.email_mock import MockEmailConnector
 from backend.execution.connectors.slack import SlackConnector
+from backend.execution.factory import get_crm_connector, get_email_connector, get_slack_connector
 from backend.execution.schema import (
     StepExecutionStatus,
     VerificationResult,
@@ -46,14 +45,16 @@ class AutomationEngine:
     def __init__(
         self,
         approval_store: Optional[ApprovalStore] = None,
-        email_connector: Optional[MockEmailConnector] = None,
-        crm_connector: Optional[MockCRMConnector] = None,
+        email_connector: Any = None,
+        crm_connector: Any = None,
         slack_connector: Optional[SlackConnector] = None,
     ):
         self.approval_store = approval_store or ApprovalStore()
-        self.email_connector = email_connector or MockEmailConnector()
-        self.crm_connector = crm_connector or MockCRMConnector()
-        self.slack_connector = slack_connector or SlackConnector()
+        # Use factory to pick real vs mock connector based on GMAIL_MODE / CRM_MODE env vars.
+        # Callers (e.g. tests) may still supply an explicit connector to override.
+        self.email_connector = email_connector if email_connector is not None else get_email_connector()
+        self.crm_connector = crm_connector if crm_connector is not None else get_crm_connector()
+        self.slack_connector = slack_connector or get_slack_connector()
 
     def execute(
         self,

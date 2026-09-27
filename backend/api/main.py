@@ -1,5 +1,6 @@
 """FastAPI backend application for WorkFlowOS."""
 
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -100,8 +101,26 @@ def simulate_workflow_failure(workflow_id: str, req: SimulateFailureRequest) -> 
 
 @app.get("/api/system/status")
 def get_system_status() -> Dict[str, Any]:
-    """Report real vs mocked integration architecture."""
+    """Report real vs mocked integration architecture (reads env at request time)."""
+    gmail_mode = os.environ.get("GMAIL_MODE", "mock").strip().lower()
+    crm_mode = os.environ.get("CRM_MODE", "mock").strip().lower()
+
+    gmail_label = (
+        "REAL (Gmail API — reads live inbox via OAuth)"
+        if gmail_mode == "real"
+        else "MOCK (Realistic stateful inbox fixture — set GMAIL_MODE=real for live Gmail)"
+    )
+    crm_label = (
+        f"REAL (Google Sheets CRM — Sheet ID {os.environ.get('GOOGLE_SHEET_ID', '?')})"
+        if crm_mode == "real"
+        else "MOCK (Realistic stateful customer DB fixture — set CRM_MODE=real for live Sheets)"
+    )
+
     return {
+        "connector_modes": {
+            "gmail_mode": gmail_mode,
+            "crm_mode": crm_mode,
+        },
         "architecture": {
             "repetition_detection": "REAL (Deterministic n-gram analysis + cryptographic event history verification)",
             "ai_intent_understanding": "REAL (OpenAI API with JSON Mode + structured schema fallback)",
@@ -112,8 +131,8 @@ def get_system_status() -> Dict[str, Any]:
                 if engine.slack_connector.is_configured
                 else "SIMULATED (Set SLACK_BOT_TOKEN for real network delivery)"
             ),
-            "gmail_integration": "MOCKED (Realistic stateful inbox fixture without OAuth risk)",
-            "crm_integration": "MOCKED (Realistic stateful customer database fixture without OAuth risk)",
+            "gmail_integration": gmail_label,
+            "crm_integration": crm_label,
             "post_condition_verification": "REAL (Computes ground-truth state diffs per step)",
         },
         "event_count": len(capture_service.store),
